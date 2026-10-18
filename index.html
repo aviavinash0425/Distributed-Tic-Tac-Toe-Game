@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Distributed Tic-Tac-Toe Using Socket Programming</title>
+
+  <!-- Fonts are optional: with no internet the page falls back to system fonts. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <h1>Distributed Tic-Tac-Toe Using Socket Programming</h1>
+      <p class="subtitle">Two browsers play. One server decides every move.</p>
+    </div>
+    <div id="conn" class="conn" data-state="connecting" role="status">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="conn-text">Connecting to server</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ============================ GAME AREA ============================ -->
+    <section class="stage">
+
+      <!-- Screen 1: enter a display name -->
+      <div id="screen-join" class="panel">
+        <h2>Join a game</h2>
+        <p class="lead">Pick a display name. The server pairs you with the next player who joins.</p>
+        <form id="join-form" autocomplete="off">
+          <label for="name-input">Display name</label>
+          <input id="name-input" name="name" type="text" maxlength="16" required placeholder="Up to 16 characters">
+          <p id="join-error" class="error" role="alert" hidden></p>
+          <button type="submit" class="btn primary">Join game</button>
+        </form>
+      </div>
+
+      <!-- Screen 2: waiting for a second player -->
+      <div id="screen-waiting" class="panel" hidden>
+        <h2><span class="pulse" aria-hidden="true"></span>Waiting for an opponent</h2>
+        <p class="lead">Open this page in another browser tab, or on another device on the same Wi-Fi, and join with a different name.</p>
+        <button id="btn-cancel" type="button" class="btn ghost">Cancel</button>
+      </div>
+
+      <!-- Screen 3: the game -->
+      <div id="screen-game" class="panel" hidden>
+        <div class="players">
+          <div id="player-x" class="player">
+            <span class="badge x">X</span>
+            <div class="pinfo">
+              <span id="p-x-name" class="pname"></span>
+              <span class="pmeta"><span id="p-x-role"></span>, <span id="p-x-wins"></span></span>
+            </div>
+          </div>
+          <div class="round">
+            <span id="round-label">Round 1</span>
+            <span id="draws-label">0 draws</span>
+          </div>
+          <div id="player-o" class="player">
+            <span class="badge o">O</span>
+            <div class="pinfo">
+              <span id="p-o-name" class="pname"></span>
+              <span class="pmeta"><span id="p-o-role"></span>, <span id="p-o-wins"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <p id="status" class="status" aria-live="polite"></p>
+
+        <div id="board" class="board" role="group" aria-label="Tic-Tac-Toe board"></div>
+
+        <p id="restart-note" class="note" aria-live="polite"></p>
+        <div class="actions">
+          <button id="btn-restart" type="button" class="btn primary" hidden>Play again</button>
+          <button id="btn-leave" type="button" class="btn ghost">Leave game</button>
+        </div>
+      </div>
+
+      <!-- Screen 4: opponent disconnected or left -->
+      <div id="screen-left" class="panel" hidden>
+        <h2>Your opponent is gone</h2>
+        <p id="left-message" class="lead"></p>
+        <div class="actions">
+          <button id="btn-requeue" type="button" class="btn primary">Find a new opponent</button>
+          <button id="btn-home" type="button" class="btn ghost">Change name</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= NETWORK INSPECTOR ======================== -->
+    <aside class="inspector" aria-label="Network inspector">
+      <h2>Network inspector</h2>
+      <p class="hint">Every message this browser sends to the server, and every reply it gets back.</p>
+
+      <dl class="stats">
+        <div><dt>Clients connected</dt><dd id="stat-connected">0</dd></div>
+        <div><dt>Players waiting</dt><dd id="stat-waiting">0</dd></div>
+        <div><dt>Games running</dt><dd id="stat-games">0</dd></div>
+        <div><dt>Game state version</dt><dd id="stat-version">none</dd></div>
+      </dl>
+
+      <div class="log-head">
+        <h3>Message log</h3>
+        <button id="btn-clear-log" type="button" class="btn tiny">Clear</button>
+      </div>
+      <ol id="log" class="log" aria-label="Socket.IO message log"></ol>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Served automatically by the Socket.IO server; no install needed. -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
